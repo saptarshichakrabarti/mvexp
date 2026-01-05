@@ -91,12 +91,23 @@ cmake is required for louvain package to be installed properly.
     conda activate multiverse
     ```
 
+3. (Optional) Install the multiverse package in development mode:
+    ```bash
+    pip install -e .
+    ```
+    This allows you to run `from multiverse import models` from anywhere in your scripts.
+
 ## Usage
 1. To run the script, provide a configuration JSON file as an argument. The configuration file should include all necessary settings for the methods and metrics you want to compare. See "Practicalities" for more information and the config.json for example structure. It includes utilities for preprocessing data, hyperparameter tuning, and evaluation of model performance.
 
-2. Run the code (with exmaple config.json file):
+2. Run the code (with example config.json file):
     ```bash
-    python main.py config.json
+    python runner.py config.json
+    ```
+    
+    Or if no config file is specified, it defaults to `config_alldatasets.json`:
+    ```bash
+    python runner.py
     ```
 
 ## Practicalities
