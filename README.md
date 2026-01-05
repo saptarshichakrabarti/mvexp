@@ -73,7 +73,7 @@ To get a local copy up and running follow steps below.
 
 ### Prerequisites
 
-It is recommended to create a new virtual enviroment with [conda](https://www.anaconda.com/).
+It is recommended to create a new virtual environment with [conda](https://www.anaconda.com/).
 
 cmake is required for louvain package to be installed properly.
 
@@ -99,10 +99,12 @@ cmake is required for louvain package to be installed properly.
 
 ## Usage
 
-1. Install dependencies:
+1. Install dependencies (if not using conda environment from Installation step 2):
     ```bash
     pip install -r requirements.txt
     ```
+    
+    **Note:** If you created the conda environment using `environment.yml` as shown in the Installation section, dependencies are already installed.
 
 2. To run the script, provide a configuration JSON file as an argument. The configuration file should include all necessary settings for the methods and metrics you want to compare. See "Practicalities" for more information and the config.json for example structure. It includes utilities for preprocessing data, hyperparameter tuning, and evaluation of model performance.
 
