@@ -134,7 +134,7 @@ def run_models_with_user_params(config_path, datasets, model_config):
                     logger.info(f"{model_name} completed for {dataset_name}")
                     
             except Exception as e:
-                logger.error(f"Error running {model_name} model: {e}")
-                # Continue with other models
+                logger.error(f"Error running {model_name} model: {e}", exc_info=True)
+                # Continue with other models to allow partial execution
                 continue
 
