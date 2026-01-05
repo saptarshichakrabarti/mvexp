@@ -62,8 +62,10 @@ def main_workflow(config_path: str):
             run_models_with_user_params(config_path, datasets, model_config)
         
         if run_gridsearch:
-            logger.info("Running grid search for hyperparameter tuning")
-            run_models_with_gridsearch(config_path, datasets, model_config)
+            logger.warning("Grid search is configured but not yet implemented in the workflow")
+            logger.info("Skipping grid search for now")
+            # TODO: Implement grid search workflow
+            # run_models_with_gridsearch(config_path, datasets, model_config)
         
         logger.info("Multiverse workflow completed successfully")
         
@@ -136,61 +138,3 @@ def run_models_with_user_params(config_path, datasets, model_config):
                 # Continue with other models
                 continue
 
-
-def run_models_with_gridsearch(config_path, datasets, model_config):
-    """
-    Run models with grid search for hyperparameter tuning.
-    
-    Args:
-        config_path (str): Path to the configuration file
-        datasets (dict): Dictionary of loaded datasets
-        model_config (dict): Model configuration dictionary
-    """
-    from .models.pca import PCAModel
-    from .models.mofa import MOFAModel
-    from .models.multivi import MultiVIModel
-    from .models.mowgli import MowgliModel
-    from .models.cobolt import CoboltModel
-    from .models.totalvi import TotalVIModel
-    
-    # Map model names to their classes
-    model_classes = {
-        "pca": PCAModel,
-        "mofa": MOFAModel,
-        "multivi": MultiVIModel,
-        "mowgli": MowgliModel,
-        "cobolt": CoboltModel,
-        "totalvi": TotalVIModel,
-    }
-    
-    # Get concatenated datasets
-    data_concat = dataset_select(datasets_dict=datasets, data_type="concatenate")
-    
-    # Run grid search for each model
-    for model_name, model_class in model_classes.items():
-        if model_name in model_config:
-            grid_search_params = model_config[model_name].get("grid_search_params", {})
-            
-            if grid_search_params:
-                logger.info(f"Running grid search for {model_name} model...")
-                try:
-                    for dataset_name, data_dict in data_concat.items():
-                        logger.info(f"Grid search for dataset: {dataset_name} with {model_name}")
-                        
-                        # Instantiate the model with gridsearch flag
-                        model = model_class(
-                            dataset=data_dict,
-                            dataset_name=dataset_name,
-                            config_path=config_path,
-                            is_gridsearch=True,
-                        )
-                        
-                        # Run grid search
-                        model.run_gridsearch()
-                        
-                        logger.info(f"Grid search completed for {model_name} on {dataset_name}")
-                        
-                except Exception as e:
-                    logger.error(f"Error running grid search for {model_name}: {e}")
-                    # Continue with other models
-                    continue
