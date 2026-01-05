@@ -4,3 +4,6 @@ multiverse/__pycache__/
 multiverse/models/__pycache__/
 __pycache__/
 .ipython
+outputs/
+*.pyc
+.pytest_cache/

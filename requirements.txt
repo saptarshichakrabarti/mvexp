@@ -10,3 +10,4 @@ pandas
 matplotlib
 numpy
 scib-metrics
+pytest
