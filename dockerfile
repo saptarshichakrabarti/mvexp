@@ -19,8 +19,7 @@ RUN apt-get update && apt-get upgrade -y && \
 WORKDIR /home
 RUN git clone https://github.com/sifrimlab/multi-verse.git
 
-# Copy requirements.txt and install dependencies using pip
-COPY requirements.txt /home/multi-verse/
+# Install dependencies using pip from the cloned repository's requirements.txt
 RUN pip install -r /home/multi-verse/requirements.txt
 
 # Create the conda environment from the repository's environment.yml file (if needed for additional dependencies)
