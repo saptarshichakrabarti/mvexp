@@ -7,11 +7,33 @@ of multimodal data integration models based on a configuration file.
 
 import os
 import sys
+import random
+import numpy as np
+import torch
 from .config import load_config
 from .data_utils import load_datasets, dataset_select
 from .logging_utils import get_logger, setup_logging
 
 logger = get_logger(__name__)
+
+
+def set_seed(seed=42):
+    """
+    Set random seeds for reproducibility across torch, numpy, and random.
+    
+    Args:
+        seed (int): Random seed value. Default is 42.
+    """
+    torch.manual_seed(seed)
+    np.random.seed(seed)
+    random.seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
+        # Make CUDA operations deterministic
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
+    logger.info(f"Random seed set to {seed} for reproducibility")
 
 
 def main_workflow(config_path: str):
@@ -30,6 +52,9 @@ def main_workflow(config_path: str):
         Exception: For any other errors during execution
     """
     try:
+        # Set random seed for reproducibility at the very start
+        set_seed(42)
+        
         logger.info(f"Starting multiverse workflow with config: {config_path}")
         
         # Load configuration

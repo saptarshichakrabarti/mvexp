@@ -98,14 +98,25 @@ cmake is required for louvain package to be installed properly.
     This allows you to run `from multiverse import models` from anywhere in your scripts.
 
 ## Usage
-1. To run the script, provide a configuration JSON file as an argument. The configuration file should include all necessary settings for the methods and metrics you want to compare. See "Practicalities" for more information and the config.json for example structure. It includes utilities for preprocessing data, hyperparameter tuning, and evaluation of model performance.
 
-2. Run the code (with example config.json file):
+1. Install dependencies:
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+2. To run the script, provide a configuration JSON file as an argument. The configuration file should include all necessary settings for the methods and metrics you want to compare. See "Practicalities" for more information and the config.json for example structure. It includes utilities for preprocessing data, hyperparameter tuning, and evaluation of model performance.
+
+3. Run the code:
+    ```bash
+    python runner.py config_alldatasets.json
+    ```
+    
+    Or with a custom config file:
     ```bash
     python runner.py config.json
     ```
     
-    Or if no config file is specified, it defaults to `config_alldatasets.json`:
+    If no config file is specified, it defaults to `config_alldatasets.json`:
     ```bash
     python runner.py
     ```
@@ -195,6 +206,53 @@ The following metrics are calculated using the scib.metrics.metrics module:
 - Silhouette Score: Assesses the quality of clustering in terms of sample separation.
 - Graph Connectivity (Graph Conn): Evaluates batch mixing and integration effectiveness.
 - Isolated Labels Silhouette Score (Isolated ASW): Quantifies how well isolated clusters are preserved after integration.
+
+## Troubleshooting
+
+### Docker Build Verification
+
+If you encounter issues with Docker builds, you can verify and troubleshoot using the following steps:
+
+1. **Check Docker Installation**:
+   ```bash
+   docker --version
+   docker info
+   ```
+
+2. **Build Docker Image Manually**:
+   ```bash
+   docker build -t multiverse:test .
+   ```
+
+3. **Inspect Build Logs**:
+   - Look for error messages during the build process
+   - Common issues include missing dependencies, network problems, or incorrect Dockerfile syntax
+
+4. **Test Container Locally**:
+   ```bash
+   docker run -it multiverse:test /bin/bash
+   ```
+
+5. **Check Container Logs**:
+   ```bash
+   docker logs <container_id>
+   ```
+
+6. **Verify Dependencies**:
+   - Ensure all required packages are listed in `requirements.txt`
+   - Check that base image is compatible with your system
+
+7. **Clean Build Cache** (if experiencing persistent issues):
+   ```bash
+   docker system prune -a
+   docker build --no-cache -t multiverse:test .
+   ```
+
+### Common Issues
+
+- **Out of Memory**: Increase Docker memory allocation in Docker Desktop settings
+- **Network Timeouts**: Check internet connection and proxy settings
+- **Permission Errors**: Ensure Docker daemon is running with appropriate permissions
 
 <!-- CONTRIBUTING -->
 ## Contributing
