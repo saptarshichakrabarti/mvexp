@@ -3,23 +3,28 @@
 # --- Docker Image Builds ---
 
 .PHONY: build-all
-build-all: build-pca build-multivi build-mowgli
+build-all: build-pca build-multivi build-mowgli build-mofa
 	@echo "All model images built."
 
 .PHONY: build-pca
 build-pca:
 	@echo "Building PCA image..."
-	docker build -f docker/pca.Dockerfile -t multiverse-pca .
+	docker build -f containers/pca/dockerfile -t multiverse-pca .
 
 .PHONY: build-multivi
 build-multivi:
 	@echo "Building MultiVI image..."
-	docker build -f docker/multivi.Dockerfile -t multiverse-multivi .
+	docker build -f containers/multivi/dockerfile -t multiverse-multivi .
 
 .PHONY: build-mowgli
 build-mowgli:
 	@echo "Building Mowgli image..."
-	docker build -f docker/mowgli.Dockerfile -t multiverse-mowgli .
+	docker build -f containers/mowgli/dockerfile -t multiverse-mowgli .
+
+.PHONY: build-mofa
+build-mofa:
+	@echo "Building MOFA image..."
+	docker build -f containers/mofa/dockerfile -t multiverse-mofa .
 
 
 # --- Orchestrator Runner ---
