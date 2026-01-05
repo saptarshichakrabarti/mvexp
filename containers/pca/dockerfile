@@ -21,7 +21,11 @@ WORKDIR /home
 # Copy the entire repository to the container's home directory
 COPY multi-verse /home
 
-# Create the conda environment from the repository's environment.yml file
+# Copy requirements.txt and install dependencies using pip
+COPY requirements.txt /home/
+RUN pip install -r /home/requirements.txt
+
+# Create the conda environment from the repository's environment.yml file (if needed for additional dependencies)
 RUN conda env create -f /home/environment.yml && \
     conda clean -afy
 
