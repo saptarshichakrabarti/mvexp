@@ -27,7 +27,8 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "multiverse-runner=multiverse.runner.cli:main",
+            # CLI entry point for docker-based workflow
+            "multiverse-cli=multiverse.runner.cli:main",
         ],
     },
 )

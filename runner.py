@@ -8,28 +8,50 @@ multimodal data integration workflow.
 
 import sys
 import os
-from multiverse.main import main_workflow
+import argparse
 
 
-if __name__ == "__main__":
+def main():
+    """Main entry point for the runner script."""
+    parser = argparse.ArgumentParser(
+        description="Run multiverse multimodal data integration workflow",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  python runner.py config.json          # Run with custom config
+  python runner.py                      # Run with default config (config_alldatasets.json)
+        """
+    )
+    parser.add_argument(
+        "config_path",
+        nargs="?",
+        default="config_alldatasets.json",
+        help="Path to the JSON configuration file (default: config_alldatasets.json)"
+    )
+    
+    args = parser.parse_args()
+    
     try:
-        # Parse command-line arguments
-        config_path = sys.argv[1] if len(sys.argv) > 1 else "config_alldatasets.json"
-        
         # Check if configuration file exists
-        if not os.path.exists(config_path):
-            raise FileNotFoundError(f"Configuration file not found: {config_path}")
+        if not os.path.exists(args.config_path):
+            raise FileNotFoundError(
+                f"Configuration file not found: {args.config_path}\n"
+                f"Please provide a valid configuration file path or ensure "
+                f"'{args.config_path}' exists in the current directory."
+            )
         
-        print(f"Starting workflow with config: {config_path}")
+        print(f"Starting workflow with config: {args.config_path}")
+        
+        # Import here to allow --help to work without dependencies installed
+        from multiverse.main import main_workflow
         
         # Execute the main workflow
-        main_workflow(config_path)
+        main_workflow(args.config_path)
         
         print("Workflow completed successfully")
         
     except FileNotFoundError as e:
         print(f"CRITICAL EXECUTION ERROR: {e}", file=sys.stderr)
-        print("Please provide a valid configuration file path.", file=sys.stderr)
         sys.exit(1)
         
     except Exception as e:
@@ -37,3 +59,7 @@ if __name__ == "__main__":
         import traceback
         traceback.print_exc(file=sys.stderr)
         sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
