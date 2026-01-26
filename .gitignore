@@ -7,3 +7,6 @@ __pycache__/
 outputs/
 *.pyc
 .pytest_cache/
+mvenv/*
+multiverse.egg-info/
+build/

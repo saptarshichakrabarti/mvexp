@@ -3,7 +3,7 @@
   "_run_gridsearch": false,
   "data": {
     "dataset_Pbmc10k": {
-      "data_path": "/data/input/Pbmc10k",
+      "data_path": "data/input/Pbmc10k",
       "rna": {
         "file_name": "RNA.h5ad",
         "is_preprocessed": false,
