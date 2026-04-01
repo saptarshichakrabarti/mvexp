@@ -1,20 +1,11 @@
+# Multi-verse
 
-<!-- PROJECT SHIELDS -->
-[![Contributors][contributors-shield]][contributors-url]
-[![Forks][forks-shield]][forks-url]
-[![Stargazers][stars-shield]][stars-url]
-[![Issues][issues-shield]][issues-url]
-[![MIT Liscence][license-shield]][license-url]
+[![MIT License](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
-<!-- PROJECT LOGO -->
-<p align="center">
-  <img src="logo.png" alt="Logo" width="200">
-</p>
-
-<h3 align="center">Multi-verse</h3>
+Multi-verse is a production-grade framework for the comparative analysis of multimodal single-cell data integration methods. It supports a variety of state-of-the-art models, including MOFA+, MOWGLI, MultiVI, Cobolt, and PCA, providing standardized evaluation metrics and visualizations.
 
 <p align="center">
-  A package for comparing MOFA, MOWGLI, MultiVI, and PCA on multimodal datasets, providing scIB metrics and UMAP visualizations.
+  <img src="logo.png" alt="Multi-verse Logo" width="200">
 </p>
 
 <p align="center">
@@ -22,293 +13,288 @@
   <a href="https://github.com/sifrimlab/multi-verse/pulls">Add Feature</a>
 </p>
 
-<p align="right" style="font-size: 8px;">
-  <em>Logo generated with the help of ChatGPT.</em>
-</p>
+<p align="right"><sub><em>Logo generated with the help of ChatGPT.</em></sub></p>
 
-<!-- TABLE OF CONTENTS -->
-<details open="open">
-  <summary><h2 style="display: inline-block">Table of Contents</h2></summary>
-  <ol>
-    <li>
-      <a href="#about-the-project">About The Project</a>
-    </li>
-    <li>
-      <a href="#getting-started">Getting Started</a>
-      <ul>
-        <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Installation</a></li>
-      </ul>
-    </li>
-    <li><a href="#usage">Usage</a></li>
-    <li><a href="#practicalities">Practicalities</a></li>
-      <ul>
-        <li><a href="#model-overview">Model Overview</a></li>
-        <li><a href="#json-file">JSON File</a></li>
-        <li><a href="#results-format">Results Format</a></li>
-      </ul>
-    <li><a href="#contributing">Contributing</a></li>
-   <li><a href="#license">License</a></li>
-    <li><a href="#contact">Contact</a></li>
-    <li><a href="#contributors">Contributors</a></li>
-  </ol>
-</details>
+## Overview
 
+Multi-verse simplifies the benchmarking of multimodal integration by providing:
 
+- **Dynamic Routing**: Automatically filters eligible models based on the omics present in your dataset (RNA, ATAC, ADT).
+- **Concurrent Orchestration**: Executes multiple models in parallel using isolated Docker containers for maximum performance and stability.
+- **Standardized Evaluation**: Integrates `scIB-metrics` to calculate bio-conservation and batch-correction scores (ARI, NMI, Silhouette, etc.).
+- **Interactive Setup**: A Streamlit-based wizard to generate configuration files without manual JSON editing.
 
-<!-- ABOUT THE PROJECT -->
-## About The Project
+Supported methods include [MOFA+](https://biofam.github.io/MOFA2/), [Mowgli](https://mowgli.readthedocs.io/en/latest/index.html), [MultiVI](https://docs.scvi-tools.org/en/stable/user_guide/models/multivi.html), Cobolt, and PCA, with scIB metrics and UMAP visualizations for interpretation.
 
-Multi-verse is a Python package designed to facilitate the comparison of multimodal data integration methods, specifically MOFA, MOWGLI, MultiVI, and PCA. By leveraging scIB metrics and generating UMAP visualizations, this package enables researchers to assess and visualize the performance of these methods on their datasets.
+---
 
-Key features:
-- Supports comparison of four major methods: [MOFA+](https://biofam.github.io/MOFA2/), [Mowgli](https://mowgli.readthedocs.io/en/latest/index.html), [MultiVI](https://docs.scvi-tools.org/en/1.2.0/user_guide/models/multivi.html), and PCA.
-- Provides scIB metrics for integration performance evaluation.
-- Generates UMAP visualizations for easy interpretation of results.
-
-<!-- GETTING STARTED -->
-## Getting Started
-
-To get a local copy up and running follow steps below.
+## Quick Start
 
 ### Prerequisites
 
-It is recommended to create a new virtual environment with [conda](https://www.anaconda.com/).
+- Python 3.12+
+- [uv](https://github.com/astral-sh/uv) (recommended) or `pip`
+- Docker (for containerized execution)
 
-cmake is required for louvain package to be installed properly.
+**Alternative (conda):** You can use a conda environment from `environment.yml` instead of `uv`:
+
+```bash
+conda env create -f environment.yml
+conda activate multiverse
+```
+
+`cmake` may be required for the Louvain dependency to install correctly in some setups.
 
 ### Installation
 
 1. Clone the repository:
+
    ```bash
    git clone https://github.com/sifrimlab/multi-verse.git
    cd multi-verse
    ```
 
-2. Create a new conda environment:
-    ```bash
-    conda env create -f environment.yml
-    conda activate multiverse
-    ```
+2. Install dependencies:
 
-3. (Optional) Install the multiverse package in development mode:
-    ```bash
-    pip install -e .
-    ```
-    This allows you to run `from multiverse import models` from anywhere in your scripts.
+   ```bash
+   make install
+   ```
 
-## Usage
+   Optional development install (if not using `uv` workflows):
 
-1. Install dependencies (if not using conda environment from Installation step 2):
-    ```bash
-    pip install -r requirements.txt
-    ```
-    
-    **Note:** If you created the conda environment using `environment.yml` as shown in the Installation section, dependencies are already installed.
+   ```bash
+   pip install -e .
+   ```
 
-2. To run the script, provide a configuration JSON file as an argument. The configuration file should include all necessary settings for the methods and metrics you want to compare. See "Practicalities" for more information and the config.json for example structure. It includes utilities for preprocessing data, hyperparameter tuning, and evaluation of model performance.
+### Running the Setup Wizard
 
-3. Run the code:
-    ```bash
-    python runner.py config_alldatasets.json
-    ```
-    
-    Or with a custom config file:
-    ```bash
-    python runner.py config.json
-    ```
-    
-    If no config file is specified, it defaults to `config_alldatasets.json`:
-    ```bash
-    python runner.py
-    ```
+Launch the interactive GUI to generate your configuration:
 
-## Practicalities
+```bash
+make setup
+```
 
-### Model Overview
+### Running the Pipeline
 
-| **Model**  | **Pairing Type**       | **Methodology**                                    | **Hyperparameter Evaluation Metric**         | **Supports scIB Metrics**  |
-|------------|------------------------|---------------------------------------------------|--------------------------------|----------------------------|
-| PCA        | Unpaired               | Linear Dimensionality Reduction                   | Variance Score                 | Yes                        |
-| MOFA+      | Paired                 | Variational Inference                              | Variance Score                | Yes                        |
-| MultiVI    | Paired-guided          | Deep Generative Model                              | Silhouette score              | Yes                         |
-| Mowgli     | Paired                 | Optimal Transport and Nonnegative Matrix Factorization (NMF) | Optimal Transport Loss        | Yes                         |
+You can run the pipeline with the default Makefile target, directly with Python, or via the Docker orchestrator.
 
+**Option 1: Makefile / `runner.py`**
 
-### JSON file
-The JSON configuration file serves as the blueprint for the pipeline, specifying datasets, preprocessing parameters, and model configurations. Below is a breakdown of the key components of the configuration file:
+```bash
+make run
+# or, with a specific config:
+uv run python runner.py config_alldatasets.json
+```
 
-#### Top-Level Parameters
-- _run_user_params: A boolean flag to enable the parameters specified by the user.
+If no config file is passed, `runner.py` defaults to `config_alldatasets.json` when invoked that way.
 
-- _run_gridsearch: A boolean flag to enable or disable parameterized search for hyperparameter optimization.
+**Option 2: Module entry point**
 
-#### Datasets
-Specifies the datasets used in the pipeline.
+```bash
+python -m multiverse.main config.json
+```
 
-- dataset_NAME: Represent the dataset. It needs to contain:
-  - data_path: Directory path where data files are stored.
-  - rna, atac, and adt: Different modalities (RNA, ATAC, and ADT data).
-    - file_name: Name of the data file.
-    - is_preprocessed: Whether the data is preprocessed (true or false).
-    - annotation: Label for cell types or other metadata.
+**Option 3: Docker orchestrator (concurrent)**
 
-This pipeline comes preconfigured with two datasets, dataset_Pbmc10k and dataset_TEA, which serve as examples for model comparison or tutorials for getting started with the pipeline. These datasets are already integrated into the configuration file and are ready to use without additional setup.
+```bash
+python -m multiverse.runner.cli --concurrent --input /path/to/data --output /path/to/results --models pca mofa multivi
+```
 
-- dataset_Pbmc10k - download [here](https://drive.google.com/drive/u/0/folders/1uq6UJFaCqcrV7XjAiNmfdptKW0BfL0Ha)
-  - Description: A multi-modal dataset featuring RNA and ATAC data from 10,000 Peripheral Blood Mononuclear Cells (PBMCs).
-  - Data Path: The data is located in the directory specified by data_path.
-  - Modalities:
-    - RNA: 10x-Multiome-Pbmc10k-RNA.h5ad\
-    - ATAC: 10x-Multiome-Pbmc10k-ATAC.h5ad
-  - Annotation: Contains cell type annotations, useful for visualization and evaluation.
+---
 
-- dataset_TEA - download [here](https://drive.google.com/drive/u/0/folders/1uq6UJFaCqcrV7XjAiNmfdptKW0BfL0Ha)
-  - Description: A multi-modal dataset with RNA, ATAC, and ADT modalities, originating from a leukopak sample.
-  - Data Path: The data is located in the directory specified by data_path.
-  - Modalities:
-    - RNA: GSM4949911_X061-AP0C1W1_leukopak_perm-cells_tea_fulldepth_cellranger-arc_filtered_feature_bc_matrix.h5
-    - ATAC: Same file as RNA, as ATAC peaks are included.
-    - ADT: GSM4949911_tea_fulldepth_adt_counts.csv.gz
-  - Annotation: This dataset does not include pre-defined annotations but is ideal for testing multi-modal capabilities.
+## Model overview
 
-#### Model
-Configures the models and their hyperparameters.
+| Model | Pairing type | Methodology | Hyperparameter evaluation (typical) | scIB metrics |
+| --- | --- | --- | --- | --- |
+| PCA | Unpaired | Linear dimensionality reduction | Variance explained | Yes |
+| MOFA+ | Paired | Variational inference | Variance explained | Yes |
+| MultiVI | Paired-guided | Deep generative model | Silhouette (and related) | Yes |
+| Mowgli | Paired | Optimal transport + NMF | Optimal transport loss | Yes |
+| Cobolt | Paired | Multi-omics joint embedding | Model-specific | Yes |
 
-The model flags allows to pick the specific models to be run
-- is_mofa+, is_pca, is_multivi, is_mowgli: Enable/disable specific models using a boolean function
+---
 
-Model-specific settings:
-- Key hyperparameters for respective models vary between models and need to be correctly specified for the _run_user_params
-- device: Specifies computation hardware (cpu or cuda:<index>).
-- grid_search_params: Takes a set of hyperparameters specified by the user for parameterized grid search using _run_gridsearch
+## Configuration reference
 
-#### Prerpocessing of modalities 
-In the preprocess_params the preprocessing parameters need to be specified for RNA, ATAC, and ADT data.
-- RNA and ATAC:
-  - min_genes_by_counts, max_genes_by_counts, normalization_target_sum, etc.: Parameters for filtering and normalization.
-- ADT:
-- per_cell_normalization: Enables normalization for ADT data.
+The system uses a JSON configuration file. Primary keys:
 
-The device to be used for modality preprocessing needs to be specified in the device section at the end:
-- device: Specifies the default device (cpu or gpu) for training.
+| Key | Type | Description |
+| :--- | :--- | :--- |
+| `batch_key` | `string` | **Required.** The key in `.obs` identifying experimental batches. |
+| `cell_type_key` | `string` | Optional. The key in `.obs` identifying ground-truth cell types. |
+| `random_seed` | `int` | Seed for reproducibility (default: 42). |
+| `output_dir` | `string` | Path where results and logs will be saved. |
+| `data` | `object` | Mapping of dataset names to file paths and per-modality settings. |
+| `model` | `object` | Models to run (e.g. `pca`, `mofa`, `multivi`, `mowgli`, `cobolt`) and their hyperparameters. |
+| `_run_user_params` | `bool` | Whether to run models with the specified parameters. |
+| `_run_gridsearch` | `bool` | Enable hyperparameter search using each model’s `grid_search_params`. |
+| `preprocess_params` | `object` | Optional filtering/normalization settings for RNA, ATAC, and ADT. |
+| `training` | `object` | Optional training-related options. |
 
-### Results Format
+### Datasets (`data`)
 
-#### Gridsearch
-For the grid search, the UMAP and latent embeddings are generated and saved only for the best model for each model-dataset combination after completing the grid search for that combination. The folder is saved in the ./outputs/gridsearch_output folder. Finally the summary of the gridsearch results is printed in the console. There the value of the best score and parameters for each model-dataset combination.
+Each dataset entry includes:
 
-#### Evaluation
-The evaluation process assesses the performance of each model using several metrics using [scIB-metrics](https://scib-metrics.readthedocs.io/en/stable/), applied to the latent embeddings generated during the training. Results are summarized for each model-dataset combination and saved in ./outputs/results.json file. 
+- `data_path`: Directory (or file path, depending on layout) where modality files live.
+- `rna`, `atac`, `adt` (optional): Per-modality blocks with:
+  - `file_name`: Data file name.
+  - `is_preprocessed`: Whether data are already preprocessed.
+  - `annotation`: Optional key for cell types or other labels used in evaluation/plots.
 
-The following metrics are calculated using the scib.metrics.metrics module:
+Example `data` entry:
 
-- Adjusted Rand Index (ARI): Measures clustering accuracy compared to known annotations.
-- Normalized Mutual Information (NMI): Evaluates the agreement between cluster assignments and annotations.
-- Silhouette Score: Assesses the quality of clustering in terms of sample separation.
-- Graph Connectivity (Graph Conn): Evaluates batch mixing and integration effectiveness.
-- Isolated Labels Silhouette Score (Isolated ASW): Quantifies how well isolated clusters are preserved after integration.
+```json
+"dataset_1": {
+  "data_path": "data/pbmc.h5mu",
+  "rna": { "file_name": "rna.h5ad", "is_preprocessed": false }
+}
+```
+
+The repo ships example configs such as `dataset_Pbmc10k` (RNA + ATAC). Example datasets referenced in older tutorials:
+
+- **dataset_Pbmc10k** — [Download (Google Drive)](https://drive.google.com/drive/u/0/folders/1uq6UJFaCqcrV7XjAiNmfdptKW0BfL0Ha): RNA and ATAC from ~10k PBMCs; includes cell type annotations.
+- **dataset_TEA** — Same folder: RNA, ATAC, and ADT from a leukopak sample; annotation may be absent but useful for multi-modal tests.
+
+### Models (`model`)
+
+Each enabled model is a key under `model` (e.g. `pca`, `mofa`, `multivi`, `mowgli`, `cobolt`). Common fields:
+
+- `device`: `cpu` or `cuda:<index>`.
+- `umap_random_state`, `umap_color_type`, `umap_use_representation` (where applicable).
+- `grid_search_params`: Hyperparameter grids used when `_run_gridsearch` is true.
+
+Model-specific hyperparameters vary; see `config_alldatasets.json` for full examples.
+
+### Preprocessing (`preprocess_params`)
+
+Optional structure for RNA, ATAC, and ADT filtering and normalization (e.g. min/max genes by counts, normalization targets, ADT per-cell normalization). The default device for preprocessing can be aligned with your `device` settings in each model block.
+
+---
+
+## Results format
+
+### Grid search
+
+`_run_gridsearch` and per-model `grid_search_params` are part of the configuration schema. The main workflow may still log that grid search is skipped while that path is fully wired; see `multiverse/main.py` for current behavior. When grid search is fully executed, outputs are typically organized under your configured `output_dir` (historically tutorials used `./outputs/gridsearch_output/` for best-run artifacts and console summaries).
+
+### Evaluation
+
+Metrics come from [scIB-metrics](https://scib-metrics.readthedocs.io/en/stable/) on latent embeddings. Per-dataset results are written under `output_dir/<dataset_name>/` (e.g. `evaluation_metrics.json`). Aggregated summaries may also appear as `results.json` at the `output_dir` root when the aggregation step runs.
+
+Commonly reported metrics include:
+
+- **ARI** — Clustering agreement with known annotations.
+- **NMI** — Normalized mutual information between clusters and labels.
+- **Silhouette** — Separation quality of clusters.
+- **Graph connectivity** — Batch mixing / integration.
+- **Isolated labels ASW** — How well isolated populations are preserved after integration.
+
+---
+
+## Developer guide
+
+### Adding a new model
+
+1. **Implement the wrapper**: Add a class in `multiverse/models/` inheriting from `ModelFactory`.
+2. **Update the registry**: Add metadata in `model_registry.json`.
+
+   ```json
+   {
+     "name": "new_model",
+     "docker_image": "multiverse-new_model:latest",
+     "supported_omics": ["rna", "atac"]
+   }
+   ```
+
+3. **Containerize**: Add a Dockerfile under `containers/` and build before running the orchestrator.
+
+### Master–worker flow
+
+1. **Master process**: Validates config, loads the model registry, and checks dataset omics.
+2. **Dynamic routing**: Drops models incompatible with the dataset’s modalities.
+3. **Preparation**: Pulls or builds required Docker images concurrently.
+4. **Execution**: Worker containers mount input data **read-only**.
+5. **Aggregation**: Collects outputs and builds the evaluation summary.
+
+---
 
 ## Troubleshooting
 
-### Docker Build Verification
+### Docker build issues
 
-If you encounter issues with Docker builds, you can verify and troubleshoot using the following steps:
+1. **Check Docker**
 
-1. **Check Docker Installation**:
    ```bash
    docker --version
    docker info
    ```
 
-2. **Build Docker Image Manually**:
+2. **Build manually**
+
    ```bash
    docker build -t multiverse:test .
    ```
 
-3. **Inspect Build Logs**:
-   - Look for error messages during the build process
-   - Common issues include missing dependencies, network problems, or incorrect Dockerfile syntax
+3. **Inspect logs** for missing dependencies, network errors, or Dockerfile issues.
 
-4. **Test Container Locally**:
+4. **Shell into a container**
+
    ```bash
    docker run -it multiverse:test /bin/bash
    ```
 
-5. **Check Container Logs**:
+5. **Logs**
+
    ```bash
    docker logs <container_id>
    ```
 
-6. **Verify Dependencies**:
-   - Ensure all required packages are listed in `requirements.txt`
-   - Check that base image is compatible with your system
+6. **Dependencies**: Confirm requirements match your base image and `requirements.txt` / lockfile.
 
-7. **Clean Build Cache** (if experiencing persistent issues):
+7. **Clean rebuild**
+
    ```bash
    docker system prune -a
    docker build --no-cache -t multiverse:test .
    ```
 
-### Common Issues
+### Common issues
 
-- **Out of Memory**: Increase Docker memory allocation in Docker Desktop settings
-- **Network Timeouts**: Check internet connection and proxy settings
-- **Permission Errors**: Ensure Docker daemon is running with appropriate permissions
+- **Out of memory**: Increase Docker memory limits (e.g. Docker Desktop).
+- **Network timeouts**: Check proxies and connectivity for image pulls.
+- **Permission errors**: Ensure the Docker daemon is running and your user can access it.
 
-<!-- CONTRIBUTING -->
+---
+
 ## Contributing
 
-Any contributions you make are **greatly appreciated**.
+1. Fork the repository.
+2. Create a feature branch (`git checkout -b feature/YourFeature`).
+3. Commit your changes with clear messages.
+4. Push and open a pull request.
 
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+---
 
+## Contact
 
+**Project:** [github.com/sifrimlab/multi-verse](https://github.com/sifrimlab/multi-verse)
 
-<!--LICENSE -->
+### Contributors
+
+Developed as part of the Integrated Bioinformatics Project (B-KUL-I0U20A), Faculty of Bioscience Engineering, KU Leuven.
+
+**Authors**
+
+- [Yuxin Qiu](https://github.com/yuxin0924)
+- [Thi Hanh Nguyen Ly](https://github.com/HannahLy1204)
+- [Zuzanna Olga Bednarska](https://github.com/ZOBednar)
+
+**Supervisors:** Anis Ismail, Lorenzo Venturelli  
+**Promotor:** Prof. Alejandro Sifrim  
+**Course coordinator:** Prof. Vera van Noort
+
+---
+
 ## License
 
-Distributed under the GPL-3 License. See `LICENSE` for more information.
-
-
-
-<!-- CONTACT -->
-## Contact
-Project Link: https://github.com/sifrimlab/multi-verse
-
-
-## Contributors
-This project was developed as part of the Integrated Bioinformatics Project (B-KUL-I0U20A) course at the Faculty of Bioscience Engineering, KU Leuven.
-
-#### Authors
-[Yuxin Qiu](https://github.com/yuxin0924)
-
-[Thi Hanh Nguyen Ly](https://github.com/HannahLy1204)
-
-[Zuzanna Olga Bednarska](https://github.com/ZOBednar)
-#### Supervisors
-Anis Ismail
-
-Lorenzo Venturelli
-#### Promotor
-Prof. Alejandro Sifrim
-#### Course Coordinator
-Prof. Vera van Noort
-
-
-
-<!-- MARKDOWN LINKS & IMAGES -->
-[contributors-shield]: https://img.shields.io/github/contributors/sifrimlab/multi-verse.svg?style=for-the-badge
-[contributors-url]: https://github.com/sifrimlab/multi-verse/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/sifrimlab/multi-verse.svg?style=for-the-badge
-[forks-url]: https://github.com/sifrimlab/multi-verse/network/members
-[stars-shield]: https://img.shields.io/github/stars/sifrimlab/multi-verse.svg?style=for-the-badge
-[stars-url]: https://github.com/sifrimlab/multi-verse/stargazers
-[issues-shield]: https://img.shields.io/github/issues/sifrimlab/multi-verse.svg?style=for-the-badge
-[issues-url]: https://github.com/sifrimlab/multi-verse/issues
-[license-shield]: https://img.shields.io/badge/license-LGPL--3.0--only-green?style=for-the-badge
-[license-url]: https://github.com/sifrimlab/multi-verse/LICENSE
+Distributed under the MIT License. See `LICENSE` for more information.

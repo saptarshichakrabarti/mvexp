@@ -1,5 +1,17 @@
 # Makefile for the Multi-verse project
 
+# --- Dependency Management ---
+
+.PHONY: install
+install:
+	@echo "Installing dependencies using uv..."
+	uv sync --group dev
+
+.PHONY: setup
+setup: install
+	@echo "Starting Multiverse Setup Wizard (Streamlit)..."
+	uv run streamlit run multiverse/gui.py
+
 # --- Docker Image Builds ---
 
 .PHONY: build-all
@@ -34,11 +46,17 @@ build-mofa:
 INPUT_DIR ?= ./sample_data/input
 OUTPUT_DIR ?= ./results
 MODELS_TO_RUN ?= pca multivi mowgli
+CONFIG_FILE ?= config_alldatasets.json
 
-.PHONY: run-all
-run-all:
-	@echo "Running orchestrator for models: $(MODELS_TO_RUN)"
-	python -m multiverse.runner.cli --models $(MODELS_TO_RUN) --input $(INPUT_DIR) --output $(OUTPUT_DIR)
+.PHONY: run
+run:
+	@echo "Running Multi-verse pipeline..."
+	uv run python runner.py $(CONFIG_FILE)
+
+.PHONY: test
+test:
+	@echo "Running tests..."
+	uv run pytest
 
 .PHONY: clean
 clean:
