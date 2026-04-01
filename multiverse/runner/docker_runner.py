@@ -5,11 +5,55 @@ from ..logging_utils import get_logger
 
 logger = get_logger(__name__)
 
+# Repository root (multiverse/runner/ -> project root)
+_REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+
+# Tags from model_registry.json that are built from this repo (not published to Docker Hub).
+_LOCAL_IMAGE_DOCKERFILES = {
+    "multiverse-pca:latest": "containers/pca/dockerfile",
+    "multiverse-mofa:latest": "containers/mofa/dockerfile",
+    "multiverse-multivi:latest": "containers/multivi/dockerfile",
+    "multiverse-mowgli:latest": "containers/mowgli/dockerfile",
+}
+
+
+def _ensure_image(client: docker.DockerClient, tag: str) -> None:
+    """Load image locally, build from repo Dockerfile, or pull from a registry."""
+    try:
+        client.images.get(tag)
+        logger.info(f"Image already present: {tag}")
+        return
+    except docker.errors.ImageNotFound:
+        pass
+
+    if tag in _LOCAL_IMAGE_DOCKERFILES:
+        dockerfile_rel = _LOCAL_IMAGE_DOCKERFILES[tag]
+        logger.info(f"Building image {tag} from {dockerfile_rel} (context: {_REPO_ROOT})")
+        _, build_logs = client.images.build(
+            path=_REPO_ROOT,
+            dockerfile=dockerfile_rel,
+            tag=tag,
+            rm=True,
+        )
+        for chunk in build_logs:
+            if isinstance(chunk, dict) and chunk.get("stream"):
+                logger.debug(chunk["stream"].rstrip())
+            elif isinstance(chunk, dict) and chunk.get("error"):
+                raise RuntimeError(chunk["error"])
+        return
+
+    logger.info(f"Pulling image from registry: {tag}")
+    client.images.pull(tag)
+
 
 async def build_images_concurrently(
     image_tags: list, status_callback: callable = None
 ):
     """Ensures all required Docker images for models are prepared concurrently.
+
+    Uses a local image if it already exists. Otherwise builds known images from
+    ``containers/*/dockerfile`` at the repo root, or pulls tags that are not
+    shipped with this repository (e.g. private registry images).
 
     Args:
         image_tags (list): A list of Docker image tags to pull or build.
@@ -22,23 +66,22 @@ async def build_images_concurrently(
     client = docker.from_env()
     loop = asyncio.get_running_loop()
 
-    def pull_image(tag):
+    def prepare_image(tag):
         try:
             if status_callback:
                 status_callback(tag, "Building/Pulling")
-            logger.info(f"Pulling/Building image: {tag}")
-            client.images.pull(tag)
-            logger.info(f"Successfully pulled image: {tag}")
+            logger.info(f"Preparing image: {tag}")
+            _ensure_image(client, tag)
             if status_callback:
                 status_callback(tag, "Ready")
             return True
         except Exception as e:
-            logger.error(f"Failed to pull image {tag}: {e}")
+            logger.error(f"Failed to prepare image {tag}: {e}")
             if status_callback:
                 status_callback(tag, "Failed")
             raise
 
-    tasks = [loop.run_in_executor(None, pull_image, tag) for tag in image_tags]
+    tasks = [loop.run_in_executor(None, prepare_image, tag) for tag in image_tags]
     results = await asyncio.gather(*tasks, return_exceptions=True)
 
     failures = [res for res in results if isinstance(res, Exception)]
